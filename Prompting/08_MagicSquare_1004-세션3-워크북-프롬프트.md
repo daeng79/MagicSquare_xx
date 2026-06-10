@@ -101,7 +101,7 @@ MagicSquare_1004 세션 3 워크북을 채워줘:
 워크북 완료 후 아래에 저장:
 
 - **보고서:** `Report/08_MagicSquare_1004-세션3-워크북-보고서.md`
-- **프롬프트:** `Prompt/08_MagicSquare_1004-세션3-워크북-프롬프트.md` (본 파일)
+- **프롬프트:** `Prompting/08_MagicSquare_1004-세션3-워크북-프롬프트.md` (본 파일)
 
 ---
 
@@ -111,8 +111,8 @@ MagicSquare_1004 세션 3 워크북을 채워줘:
 |---|---|
 | `Report/06_4x4-마방진-MomTest-인터뷰-보고서.md` | Mom Test 인터뷰 원본·증거 |
 | `Report/08_MagicSquare_1004-세션3-워크북-보고서.md` | 본 프롬프트로 생성한 세션 3 워크북 |
-| `Prompt/cursor_mom_test_workbook_discussion.md` | Mom Test 워크북·인터뷰 대화 기록 |
-| `Prompt/07_역할분리-MomTest-시뮬레이션-프롬프트.md` | 역할 분리 3턴 시뮬레이션 |
+| `Prompting/cursor_mom_test_workbook_discussion.md` | Mom Test 워크북·인터뷰 대화 기록 |
+| `Prompting/07_역할분리-MomTest-시뮬레이션-프롬프트.md` | 역할 분리 3턴 시뮬레이션 |
 
 ---
 
