@@ -1,0 +1,12 @@
+[project]
+name = "magicsquare"
+version = "0.0.0"
+description = "4×4 마방진 10선 검증 — 세션 3 (validate_lines)"
+requires-python = ">=3.10"
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

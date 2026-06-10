@@ -1,0 +1,55 @@
+# MagicSquare_xx — 세션 3 (.cursorrules 초안)
+
+## 도메인
+
+- 4×4 정수 격자 `grid: list[list[int]]` (4행×4열).
+- `0` = 빈칸, 채워진 칸은 `1~16`만 허용.
+- 마법상수(목표 합) = **34**.
+- 검증 대상 **10선**: 행 `R1~R4`, 열 `C1~C4`, 대각선 `D1`(↘), `D2`(↙).
+- 한 선의 합 ≠ 34이면 해당 선 ID를 `failed_lines`에 포함.
+- 빈칸(0)이 있어도 합 계산은 수행; 전 선 통과 전까지 완료 아님.
+
+## API (Contract)
+
+```python
+validate_lines(grid) -> {
+    "status": "pass" | "fail" | "incomplete",
+    "failed_lines": ["R1", "C3", "D1", ...]  # 실패한 선 ID 목록
+}
+```
+
+- `pass`: 10선 모두 합=34.
+- `fail`: 하나 이상 합≠34 (빈칸 유무와 무관).
+- `incomplete`: 행·열은 통과했으나 대각선(D1/D2) 중 하나 이상 실패 — 부분 만족을 완료로 취급하지 않음.
+
+## ECB 패턴
+
+| 계층 | 역할 | 위치 |
+|---|---|---|
+| **Entity** | 선 합 계산, 34 비교, 선 ID 부여 | `src/` 순수 함수 |
+| **Controller** | 고정 검증 순서 `R1→R4→C1→C4→D1→D2`, status·failed_lines 조립 | `src/validate_lines.py` |
+| **Boundary** | 입력 격자·출력 dict 계약 검증 | `tests/` |
+
+- Entity는 I/O·상태 없음. Controller는 Entity만 호출. Boundary는 공개 API만 테스트.
+- 솔버·정답 채우기·UI·DB 금지.
+
+## TDD
+
+- 사이클: **RED → GREEN → REFACTOR** (한 번에 한 단계).
+- **RED**: `tests/`만 수정. 실패하는 테스트를 먼저 작성.
+- **GREEN**: `src/`만 수정. RED 테스트 1개 이상 통과하는 최소 구현.
+- **REFACTOR**: 동작 유지, 중복·순서 로직 정리.
+- 금지: assert 완화, `@pytest.mark.skip`, `xfail`, 테스트 삭제로 RED 회피.
+- RED 단계에서 `src/` 수정 금지.
+
+## AI 작업 규칙
+
+- 사용자와 **한국어**로 소통. 코드 주석도 한국어.
+- TDD 작업 시 응답 **첫 줄**에 Phase 선언: `Phase: RED` / `Phase: GREEN` / `Phase: REFACTOR`.
+- 범위 밖 기능(솔버, 대각선 함수만 따로 추가, TDD 도구 도입 등) 제안·구현 금지.
+- **git commit**은 사용자가 명시적으로 요청할 때만 수행.
+- 변경은 요청 범위만; 불필요한 파일·리팩터 금지.
+
+## 검증 순서 (고정)
+
+`R1 → R2 → R3 → R4 → C1 → C2 → C3 → C4 → D1 → D2`
