@@ -24,6 +24,7 @@
 | `Report/02_MagicSquare_1004-세션3-워크북-보고서.md` | R-G-I-O·SC-1~3·Rule |
 | `Report/03_validate_lines-R-G-I-O-정합성-확인-보고서.md` | API 2계층 분리 권장 |
 | `Report/04_ARRR-TDD-Command-Skill-체인-보고서.md` | Dual-Track TDD·Command 체인 |
+| `Report/05_PRD-Traceability-RED-테스트-플랜-보고서.md` | §12 Test ID RED 설계·Given 격자 |
 | `.cursorrules` | ECB·TDD·검증 순서 |
 
 ---
@@ -184,10 +185,12 @@ diagnose(grid: list[list[int]]) -> {
 
 ## 10. Dual-Track TDD
 
-| Track | Layer | 대상 | Test ID |
-|---|---|---|---|
-| **A (UI)** | `boundary` | `validate_lines` | `T-BND-{nnn}` |
-| **B (Logic)** | `entity` | `sum_line`, `line_sum_matches_magic` | `T-LOG-{nnn}` |
+| Track | Layer | 대상 | Test ID | RED 묶음 (확정) |
+|---|---|---|---|---|
+| **A (UI)** | `boundary` | `validate_lines` | `T-BND-001`~`004` | Boundary: `T-BND-001`~`004` |
+| **B (Logic)** | `entity` | `sum_line`, `line_sum_matches_magic` | `T-LOG-001`~`002` | Logic: `T-LOG-001`~`002` |
+
+**실행 순서:** Logic 묶음 → GREEN → Boundary 묶음 → GREEN (`Report/05`)
 
 ### ARRR · Command 체인
 
@@ -230,15 +233,72 @@ rules:
 
 ## 12. Traceability (SC → FR → Test)
 
-| SC | FR | Test ID (예) | RED 시나리오 |
+### 12.1 요약 (SC → FR → Test ID)
+
+| SC | FR | Test ID | RED 시나리오 | 상태 |
+|---|---|---|---|---|
+| SC-1 | FR-001,002,010,011 | **T-BND-001** | R1 합≠34 → `failed_lines`에 `R1` | RED 설계 확정 |
+| SC-1 | FR-001,002 | **T-BND-002** | D1 합≠34 → `failed_lines`에 `D1` | RED 설계 확정 |
+| SC-2 | FR-006,007 | **T-BND-003** | 행·열 OK·D1 실패 → `incomplete` | RED 설계 확정 |
+| SC-2 | FR-007 | **T-BND-004** | 검증 순서 준수 (Controller) | RED 설계 확정 |
+| SC-3 | FR-022 | **T-DGN-001** (예약) | `next_check` 비어 있지 않음 | 후속 (`diagnose`) |
+| SC-1 | FR-010 | **T-LOG-001** | `sum_line` 4칸 합 | RED 설계 확정 |
+| SC-1 | FR-011 | **T-LOG-002** | `line_sum_matches_magic` vs 34 | RED 설계 확정 |
+
+### 12.2 Test ID 상세 (Given / When / Then)
+
+| Test ID | Track | Layer | 대상 | Given | When | Then |
+|---|---|---|---|---|---|---|
+| **T-LOG-001** | B (Logic) | `entity` | `sum_line` | `cells = [7, 8, 9, 10]` | `sum_line(cells)` | 반환값 `== 34` |
+| **T-LOG-002** | B (Logic) | `entity` | `line_sum_matches_magic` | `cells = [7, 8, 9, 10]`, `magic_constant = 34` | `line_sum_matches_magic(cells, magic_constant)` | 반환값 `is True` |
+| **T-BND-001** | A (UI) | `boundary` | `validate_lines` | `grid_r1_fail` (R1 합 40) | `validate_lines(grid)` | `status == "fail"`, `"R1" in failed_lines` |
+| **T-BND-002** | A (UI) | `boundary` | `validate_lines` | `grid_d1_fail` (D1↘ 합 23) | `validate_lines(grid)` | `status == "fail"`, `"D1" in failed_lines` |
+| **T-BND-003** | A (UI) | `boundary` | `validate_lines` | `grid_incomplete_d1` (행·열 34, D1=40) | `validate_lines(grid)` | `status == "incomplete"`, `"D1" in failed_lines`, 행·열 ID 없음 |
+| **T-BND-004** | A (UI) | `boundary` | `validate_lines` | `grid_multi_fail` (R1·R3 동시 실패) | `validate_lines(grid)` | `failed_lines`가 `VERIFICATION_ORDER` 순 (`["R1", "R3", …]`) |
+
+### 12.3 테스트 파일·픽스처
+
+| Test ID | 테스트 파일 | 함수명 | conftest 픽스처 |
 |---|---|---|---|
-| SC-1 | FR-001,002,010,011 | T-BND-001 | R1 합≠34 → `failed_lines`에 `R1` |
-| SC-1 | FR-001,002 | T-BND-002 | D1 합≠34 → `failed_lines`에 `D1` |
-| SC-2 | FR-006,007 | T-BND-003 | 행·열 OK·D1 실패 → `incomplete` |
-| SC-2 | FR-007 | T-BND-004 | 검증 순서 준수 (Controller) |
-| SC-3 | FR-022 | (후속) | `next_check` 비어 있지 않음 |
-| SC-1 | FR-010 | T-LOG-001 | `sum_line` 4칸 합 |
-| SC-1 | FR-011 | T-LOG-002 | `line_sum_matches_magic` vs 34 |
+| T-LOG-001 | `tests/test_entity_line.py` | `test_t_log_001_sum_line_four_cells` | — (리터럴 Given) |
+| T-LOG-002 | `tests/test_entity_line.py` | `test_t_log_002_line_sum_matches_magic_true` | — |
+| T-BND-001 | `tests/test_validate_lines.py` | `test_t_bnd_001_r1_in_failed_lines` | `grid_r1_fail` |
+| T-BND-002 | `tests/test_validate_lines.py` | `test_t_bnd_002_d1_in_failed_lines` | `grid_d1_fail` |
+| T-BND-003 | `tests/test_validate_lines.py` | `test_t_bnd_003_incomplete_row_col_ok_d1_fail` | `grid_incomplete_d1` |
+| T-BND-004 | `tests/test_validate_lines.py` | `test_t_bnd_004_failed_lines_verification_order` | `grid_multi_fail` |
+
+### 12.4 Given 격자 (픽스처 설계값)
+
+**`grid_r1_fail`** — T-BND-001
+
+```
+[[10, 10, 10, 10], [1, 2, 3, 4], [5, 6, 7, 8], [4, 5, 6, 7]]  # R1 합 40
+```
+
+**`grid_d1_fail`** — T-BND-002 (D1 = (0,0)(1,1)(2,2)(3,3), 합 23)
+
+```
+[[10, 1, 2, 3], [4, 2, 5, 6], [7, 8, 7, 9], [10, 11, 12, 4]]
+```
+
+**`grid_incomplete_d1`** — T-BND-003 (행·열 8선 합 34, D1=40)
+
+```
+[[10, 10, 7, 7], [7, 10, 10, 7], [7, 7, 10, 10], [10, 7, 7, 10]]
+```
+
+**`grid_multi_fail`** — T-BND-004 (R1·R3 각 합 40)
+
+```
+[[10, 10, 10, 10], [1, 2, 3, 4], [10, 10, 10, 10], [4, 5, 6, 7]]
+```
+
+### 12.5 pytest 명령
+
+| RED 묶음 | 명령 |
+|---|---|
+| Logic (`T-LOG-001`~`002`) | `pytest tests/test_entity_line.py -v` |
+| Boundary (`T-BND-001`~`004`) | `pytest tests/test_validate_lines.py -v` |
 
 ---
 
@@ -274,9 +334,14 @@ rules:
 | `src/entity/line.py` | stub (`...`) |
 | `src/validate_lines.py` | stub (`...`) |
 | `tests/test_validate_lines.py` | import만 |
-| FR-001~012 | **미구현** (RED/GREEN 대기) |
+| `tests/test_entity_line.py` | **미생성** (T-LOG-001~002 대기) |
+| `tests/conftest.py` | **미생성** (`grid_r1_fail` 등 4픽스처 설계 확정) |
+| Test ID `T-LOG-001`~`002`, `T-BND-001`~`004` | **RED 설계 확정** (`Report/05`, §12.2) |
+| Test ID `T-DGN-001` | **후속** (`diagnose` · FR-022) |
+| FR-001~012 | **미구현** (RED skeleton → GREEN 대기) |
 | FR-020~023 | **후속 세션** |
-| `docs/PRD.md` | **본 문서** |
+| `docs/PRD.md` | **본 문서** (§12 Test ID 상세 반영) |
+| `Report/05` · `Prompting/05` | RED 테스트 플랜 Export 완료 |
 
 ---
 
