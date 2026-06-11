@@ -1,9 +1,9 @@
 # Entity — 선 합 계산 RED skeleton (assert 없음)
 
-import pytest
-
+from _approval import assert_matches_golden
 from constants import MAGIC_CONSTANT
 from entity.line import line_sum_matches_magic, sum_line
+from entity.serialize import format_entity_bool_golden, format_entity_int_golden
 
 
 def test_t_log_001_sum_line_four_cells():
@@ -15,9 +15,8 @@ def test_t_log_001_sum_line_four_cells():
     result = sum_line(cells)
 
     # Then
-    pytest.fail(
-        f"RED: T-LOG-001 — sum_line(cells) 반환값 == {MAGIC_CONSTANT} 기대, got={result!r}"
-    )
+    assert result == MAGIC_CONSTANT
+    assert_matches_golden("T-LOG-001", format_entity_int_golden(result))
 
 
 def test_t_log_002_line_sum_matches_magic_true():
@@ -30,6 +29,5 @@ def test_t_log_002_line_sum_matches_magic_true():
     result = line_sum_matches_magic(cells, magic_constant)
 
     # Then
-    pytest.fail(
-        f"RED: T-LOG-002 — line_sum_matches_magic 반환값 is True 기대, got={result!r}"
-    )
+    assert result is True
+    assert_matches_golden("T-LOG-002", format_entity_bool_golden(result))

@@ -1,12 +1,24 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "magicsquare"
 version = "0.0.0"
 description = "4×4 마방진 10선 검증 — 세션 3 (validate_lines)"
 requires-python = ">=3.10"
 
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["gui*"]
+
 [project.optional-dependencies]
 dev = ["pytest>=8.0"]
+gui = ["PyQt6>=6.5"]
+
+[project.scripts]
+magicsquare-demo = "gui.demo:main"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = ["src"]
+pythonpath = ["src", "tests"]
