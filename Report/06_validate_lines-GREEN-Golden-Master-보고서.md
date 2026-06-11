@@ -48,7 +48,7 @@
 | 검증 순서 | `VERIFICATION_ORDER` 고정 (`R1→…→D2`) |
 | 선 추출 | `_cells_for_line(grid, line_id)` — 행·열·D1↘·D2↙ |
 | `failed_lines` | 순서대로 실패 선 ID 수집 |
-| `status` | 10선 통과 → `pass` · 행·열 OK + 대 diagonal선만 실패 → `incomplete` · 그 외 → `fail` |
+| `status` | 10선 통과 → `pass` · 행·열 OK + 대각선만 실패 → `incomplete` · 그 외 → `fail` |
 
 ### 4.3 PASS Test ID
 
